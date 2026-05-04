@@ -73,7 +73,7 @@ router.post(
  *   post:
  *     tags: [Auth]
  *     summary: Log in a student
- *     description: Sets an httpOnly JWT cookie on success. Use Accept-Language (fr|en) for messages. 401 generic wrong credentials; 403 pending or disabled account with distinct messages.
+ *     description: Sets an httpOnly JWT cookie and returns access_token in JSON (use Authorization Bearer if cookies are blocked cross-origin). Accept-Language (fr|en). 401 generic wrong credentials; 403 pending or disabled with distinct messages.
  *     requestBody:
  *       required: true
  *       content:
@@ -91,7 +91,14 @@ router.post(
  *                 - type: object
  *                   properties:
  *                     data:
- *                       $ref: '#/components/schemas/StudentProfile'
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/StudentProfile'
+ *                         - type: object
+ *                           required: [access_token]
+ *                           properties:
+ *                             access_token:
+ *                               type: string
+ *                               description: JWT; send as Authorization Bearer for module routes if cookies are not sent.
  *       401:
  *         description: Incorrect email or password
  *         content:
@@ -169,7 +176,7 @@ router.get(
  *   post:
  *     tags: [Auth]
  *     summary: Activate account with token and set password
- *     description: Validates activation token, hashes password, activates user, sets session cookie.
+ *     description: Validates activation token, hashes password, activates user; sets session cookie and returns access_token (Bearer fallback).
  *     requestBody:
  *       required: true
  *       content:
@@ -187,7 +194,12 @@ router.get(
  *                 - type: object
  *                   properties:
  *                     data:
- *                       $ref: '#/components/schemas/StudentProfile'
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/StudentProfile'
+ *                         - type: object
+ *                           required: [access_token]
+ *                           properties:
+ *                             access_token: { type: string }
  *       400:
  *         description: Invalid, used, or expired token; validation error
  *         content:
@@ -244,7 +256,7 @@ router.post(
  *   post:
  *     tags: [Auth]
  *     summary: Reset password with token
- *     description: Validates reset token, updates password, sets session cookie.
+ *     description: Validates reset token, updates password; sets session cookie and returns access_token (Bearer fallback).
  *     requestBody:
  *       required: true
  *       content:
@@ -262,7 +274,12 @@ router.post(
  *                 - type: object
  *                   properties:
  *                     data:
- *                       $ref: '#/components/schemas/StudentProfile'
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/StudentProfile'
+ *                         - type: object
+ *                           required: [access_token]
+ *                           properties:
+ *                             access_token: { type: string }
  *       400:
  *         description: Invalid, used, or expired token; validation error
  *         content:

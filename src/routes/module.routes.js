@@ -17,6 +17,7 @@ router.use(studentAuth);
  *     summary: List published modules
  *     security:
  *       - studentCookie: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Ordered published modules (includes thumbnail_url; no video_id)
@@ -48,6 +49,7 @@ router.get('/', asyncHandler(listModules));
  *     summary: Get Cloudflare Stream signed token for module video
  *     security:
  *       - studentCookie: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id

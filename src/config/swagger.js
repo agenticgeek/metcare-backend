@@ -23,6 +23,13 @@ const options = {
           name: 'student_session',
           description: 'HttpOnly JWT cookie set by login, activate, or reset-password.',
         },
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Same JWT as the session cookie. Use when cross-origin cookies are not sent (typical for SPA + API on different hosts). Send Authorization: Bearer plus the access_token from login, activate, or reset-password.',
+        },
       },
       schemas: {
         SuccessEnvelope: {

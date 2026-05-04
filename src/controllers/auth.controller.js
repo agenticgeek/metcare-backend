@@ -77,8 +77,8 @@ async function login(req, res) {
     .eq('id', user.id);
   if (updateErr) throw updateErr;
 
-  setStudentCookie(res, user.id);
-  return success(res, sanitizeUser(user), '', 200);
+  const access_token = setStudentCookie(res, user.id);
+  return success(res, { ...sanitizeUser(user), access_token }, '', 200);
 }
 
 /**
@@ -185,8 +185,8 @@ async function activate(req, res) {
     .single();
   if (fetchErr) throw fetchErr;
 
-  setStudentCookie(res, fresh.id);
-  return success(res, sanitizeUser(fresh), '', 200);
+  const access_token = setStudentCookie(res, fresh.id);
+  return success(res, { ...sanitizeUser(fresh), access_token }, '', 200);
 }
 
 async function forgotPassword(req, res) {
@@ -260,8 +260,8 @@ async function resetPassword(req, res) {
     .single();
   if (fetchErr) throw fetchErr;
 
-  setStudentCookie(res, fresh.id);
-  return success(res, sanitizeUser(fresh), '', 200);
+  const access_token = setStudentCookie(res, fresh.id);
+  return success(res, { ...sanitizeUser(fresh), access_token }, '', 200);
 }
 
 function logout(req, res) {

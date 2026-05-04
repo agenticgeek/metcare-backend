@@ -37,6 +37,7 @@ app.use(
       callback(null, false);
     },
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language'],
   })
 );
 app.use(express.json());

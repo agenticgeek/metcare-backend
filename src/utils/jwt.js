@@ -23,7 +23,8 @@ function verifyStudentToken(token) {
 
 function cookieOptions() {
   const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
-  const production = process.env.NODE_ENV === 'production';
+  const production =
+    process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
   return {
     httpOnly: true,
     secure: production,
@@ -36,6 +37,7 @@ function cookieOptions() {
 function setStudentCookie(res, userId) {
   const token = signStudentToken(userId);
   res.cookie(COOKIE_NAME, token, cookieOptions());
+  return token;
 }
 
 function clearStudentCookie(res) {

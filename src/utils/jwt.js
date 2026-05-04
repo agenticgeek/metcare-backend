@@ -23,10 +23,11 @@ function verifyStudentToken(token) {
 
 function cookieOptions() {
   const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
+  const production = process.env.NODE_ENV === 'production';
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: production,
+    sameSite: production ? 'none' : 'lax',
     path: '/',
     maxAge: maxAgeMs,
   };
@@ -38,12 +39,8 @@ function setStudentCookie(res, userId) {
 }
 
 function clearStudentCookie(res) {
-  res.clearCookie(COOKIE_NAME, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
+  const { httpOnly, secure, sameSite, path } = cookieOptions();
+  res.clearCookie(COOKIE_NAME, { httpOnly, secure, sameSite, path });
 }
 
 module.exports = {

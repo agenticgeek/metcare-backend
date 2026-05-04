@@ -10,11 +10,32 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+function normalizeCorsOrigin(entry) {
+  const s = String(entry).trim();
+  if (!s) return null;
+  try {
+    const withProto = /:\/\//.test(s) ? s : `https://${s}`;
+    const u = new URL(withProto);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return s.replace(/\/$/, '') || null;
+  }
+}
+
+function loadAllowedOrigins() {
+  const raw = process.env.FRONTEND_URL?.trim() || 'http://localhost:3000';
+  return [...new Set(raw.split(',').map(normalizeCorsOrigin).filter(Boolean))];
+}
+
+const allowedOrigins = loadAllowedOrigins();
 
 app.use(
   cors({
-    origin: frontendUrl,
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(null, false);
+    },
     credentials: true,
   })
 );

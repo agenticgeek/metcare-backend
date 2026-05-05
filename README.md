@@ -135,6 +135,8 @@ Those pages should read `token` from the query string and POST to the API with `
 
 Base path: **`/api/modules`**. Requires a valid session: **`student_session`** cookie **or** **`Authorization: Bearer`** with the **`access_token`** from login / activate / reset-password **or** header **`X-Access-Token`** with that same JWT. Prefer headers when the SPA and API are on different origins and cookies are not sent.
 
+**401 on `/api/modules` (Railway, Vercel, etc.):** Almost always **no cookie and no Bearer** on the request, or **`JWT_STUDENT_SECRET`** differs between the login request path and this deploy. Fix on the SPA by attaching **`access_token`**; fix env by aligning **`FRONTEND_URL`** with your SPA origin. Temporary diagnostics: set **`AUTH_DEBUG=1`** on the API and inspect response header **`X-Auth-Reason`** (`missing_token` \| `invalid_token`). If **`NODE_ENV`** is not `production` on Railway but you serve HTTPS, set **`FORCE_SECURE_SESSION_COOKIES=true`** so session cookies use **`Secure` + `SameSite=None`**.
+
 | Method | Path | Returns |
 |--------|------|---------|
 | GET | `/api/modules` | `data`: array of published modules: `id`, `order_index`, `title`, `description`, `duration_seconds`, `thumbnail_url` (nullable; no `video_id`). |

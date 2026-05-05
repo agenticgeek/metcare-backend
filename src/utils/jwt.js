@@ -24,10 +24,18 @@ function verifyStudentToken(token) {
   return jwt.verify(token, getSecret());
 }
 
+function isProductionLike() {
+  const force = process.env.FORCE_SECURE_SESSION_COOKIES;
+  if (force === '1' || force === 'true') return true;
+  if (process.env.NODE_ENV === 'production') return true;
+  if (process.env.VERCEL === '1') return true;
+  if (process.env.RAILWAY_ENVIRONMENT === 'production') return true;
+  return false;
+}
+
 function cookieOptions() {
   const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
-  const production =
-    process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+  const production = isProductionLike();
   const opts = {
     httpOnly: true,
     secure: production,
@@ -56,6 +64,7 @@ module.exports = {
   COOKIE_NAME,
   signStudentToken,
   verifyStudentToken,
+  isProductionLike,
   cookieOptions,
   setStudentCookie,
   clearStudentCookie,

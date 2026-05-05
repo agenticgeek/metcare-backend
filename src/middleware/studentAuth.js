@@ -28,18 +28,22 @@ function getSessionToken(req) {
 }
 
 function studentAuth(req, res, next) {
+  const debugAuth = process.env.AUTH_DEBUG === '1' || process.env.AUTH_DEBUG === 'true';
   try {
     const token = getSessionToken(req);
     if (!token) {
+      if (debugAuth) res.setHeader('X-Auth-Reason', 'missing_token');
       return failure(res, messages.UNAUTHORIZED, 401);
     }
     const payload = verifyStudentToken(token);
     if (payload.role !== 'student') {
+      if (debugAuth) res.setHeader('X-Auth-Reason', 'wrong_role');
       return failure(res, messages.UNAUTHORIZED, 401);
     }
     req.user = { id: payload.sub };
     next();
   } catch {
+    if (debugAuth) res.setHeader('X-Auth-Reason', 'invalid_token');
     return failure(res, messages.UNAUTHORIZED, 401);
   }
 }

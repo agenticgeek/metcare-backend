@@ -53,7 +53,7 @@ const router = Router();
 router.post(
   '/register',
   [
-    body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email is required.'),
     body('full_name')
       .trim()
       .isString()
@@ -117,7 +117,7 @@ router.post(
 router.post(
   '/login',
   [
-    body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email is required.'),
     body('password').isString().notEmpty().withMessage('Password is required.'),
   ],
   validateRequest,
@@ -247,7 +247,7 @@ router.post(
  */
 router.post(
   '/forgot-password',
-  [body('email').isEmail().withMessage('Valid email is required.').normalizeEmail()],
+  [body('email').isEmail().withMessage('Valid email is required.')],
   validateRequest,
   asyncHandler(forgotPassword)
 );

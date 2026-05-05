@@ -19,10 +19,12 @@ function sanitizeUser(row) {
 }
 
 async function fetchUserByEmail(supabase, email) {
+  const cleanEmail = String(email || '').trim();
   const { data, error } = await supabase
     .from('users')
     .select('id, email, full_name, password_hash, status')
-    .eq('email', email)
+    .ilike('email', cleanEmail)
+    .limit(1)
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -58,7 +60,8 @@ function isPendingStatus(status) {
 
 async function login(req, res) {
   const supabase = getSupabase();
-  const { email, password } = req.body;
+  const email = String(req.body.email || '').toLowerCase().trim();
+  const password = req.body.password;
 
   const user = await fetchUserByEmail(supabase, email);
   if (!user) {
@@ -91,7 +94,8 @@ async function login(req, res) {
  */
 async function register(req, res) {
   const supabase = getSupabase();
-  const { email, full_name, password, confirm_password } = req.body;
+  const { full_name, password, confirm_password } = req.body;
+  const email = String(req.body.email || '').toLowerCase().trim();
 
   if (password !== confirm_password) {
     return failure(
@@ -208,7 +212,7 @@ async function activate(req, res) {
 
 async function forgotPassword(req, res) {
   const supabase = getSupabase();
-  const { email } = req.body;
+  const email = String(req.body.email || '').toLowerCase().trim();
 
   try {
     const user = await fetchUserByEmail(supabase, email);

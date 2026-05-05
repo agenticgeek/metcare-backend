@@ -177,6 +177,18 @@ async function activate(req, res) {
     .eq('id', row.user_id);
   if (userErr) throw userErr;
 
+  // Sync password with Supabase Auth (auth.users) if the user exists there
+  try {
+    const { error: authErr } = await supabase.auth.admin.updateUserById(row.user_id, {
+      password: password
+    });
+    if (authErr) {
+      console.warn(`[Supabase Auth] Could not update auth.users password for ${row.user_id}:`, authErr.message);
+    }
+  } catch (e) {
+    console.warn(`[Supabase Auth] Failed to sync password for ${row.user_id}:`, e.message);
+  }
+
   const { error: tokenErr } = await supabase
     .from('activation_tokens')
     .update({ used: true })
@@ -251,6 +263,18 @@ async function resetPassword(req, res) {
     .update({ password_hash })
     .eq('id', row.user_id);
   if (userErr) throw userErr;
+
+  // Sync password with Supabase Auth (auth.users) if the user exists there
+  try {
+    const { error: authErr } = await supabase.auth.admin.updateUserById(row.user_id, {
+      password: password
+    });
+    if (authErr) {
+      console.warn(`[Supabase Auth] Could not update auth.users password for ${row.user_id}:`, authErr.message);
+    }
+  } catch (e) {
+    console.warn(`[Supabase Auth] Failed to sync password for ${row.user_id}:`, e.message);
+  }
 
   const { error: tokenErr } = await supabase
     .from('activation_tokens')

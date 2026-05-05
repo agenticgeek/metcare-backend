@@ -42,7 +42,11 @@ function wrapBrandedHtml(title, bodyHtml) {
 }
 
 async function sendActivationEmail(to, token) {
-  const base = process.env.BASE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
+  const base =
+    process.env.FRONTEND_PUBLIC_URL ||
+    process.env.FRONTEND_URL ||
+    process.env.BASE_URL ||
+    'http://localhost:3000';
   const link = `${base.replace(/\/$/, '')}/activate?token=${encodeURIComponent(token)}`;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!from) {
@@ -67,7 +71,11 @@ async function sendActivationEmail(to, token) {
 }
 
 async function sendPasswordResetEmail(to, token) {
-  const base = process.env.BASE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
+  const base =
+    process.env.FRONTEND_PUBLIC_URL ||
+    process.env.FRONTEND_URL ||
+    process.env.BASE_URL ||
+    'http://localhost:3000';
   const link = `${base.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!from) {

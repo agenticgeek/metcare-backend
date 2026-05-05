@@ -43,12 +43,17 @@ function isExpired(expiresAt) {
   return new Date(expiresAt).getTime() <= Date.now();
 }
 
+function normalizedAccountStatus(status) {
+  if (status == null || status === '') return '';
+  return String(status).trim().toLowerCase();
+}
+
 function isDisabledStatus(status) {
-  return String(status).toLowerCase() === 'disabled';
+  return normalizedAccountStatus(status) === 'disabled';
 }
 
 function isPendingStatus(status) {
-  return String(status).toLowerCase() === 'pending';
+  return normalizedAccountStatus(status) === 'pending';
 }
 
 async function login(req, res) {

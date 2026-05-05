@@ -4,7 +4,10 @@ const COOKIE_NAME = 'student_session';
 const JWT_EXPIRES_IN = '7d';
 
 function getSecret() {
-  const secret = process.env.JWT_STUDENT_SECRET;
+  const secret =
+    process.env.JWT_STUDENT_SECRET == null
+      ? ''
+      : String(process.env.JWT_STUDENT_SECRET).trim();
   if (!secret) {
     throw new Error('JWT_STUDENT_SECRET is not configured');
   }
@@ -25,13 +28,17 @@ function cookieOptions() {
   const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
   const production =
     process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
-  return {
+  const opts = {
     httpOnly: true,
     secure: production,
     sameSite: production ? 'none' : 'lax',
     path: '/',
     maxAge: maxAgeMs,
   };
+  if (production) {
+    opts.partitioned = true;
+  }
+  return opts;
 }
 
 function setStudentCookie(res, userId) {
@@ -41,8 +48,8 @@ function setStudentCookie(res, userId) {
 }
 
 function clearStudentCookie(res) {
-  const { httpOnly, secure, sameSite, path } = cookieOptions();
-  res.clearCookie(COOKIE_NAME, { httpOnly, secure, sameSite, path });
+  const { httpOnly, secure, sameSite, path, partitioned } = cookieOptions();
+  res.clearCookie(COOKIE_NAME, { httpOnly, secure, sameSite, path, partitioned });
 }
 
 module.exports = {

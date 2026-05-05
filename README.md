@@ -133,7 +133,7 @@ Those pages should read `token` from the query string and POST to the API with `
 
 ### 6) Protected module + video endpoints
 
-Base path: **`/api/modules`**. All routes require a valid **`student_session`** cookie (student JWT).
+Base path: **`/api/modules`**. Requires a valid session: **`student_session`** cookie **or** **`Authorization: Bearer`** with the **`access_token`** from login / activate / reset-password **or** header **`X-Access-Token`** with that same JWT. Prefer headers when the SPA and API are on different origins and cookies are not sent.
 
 | Method | Path | Returns |
 |--------|------|---------|

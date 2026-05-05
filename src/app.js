@@ -10,6 +10,16 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
+{
+  const raw = process.env.TRUST_PROXY_HOPS;
+  let trust = 1;
+  if (raw !== undefined && raw !== '') {
+    const n = Number(raw);
+    trust = Number.isFinite(n) ? n : 1;
+  }
+  app.set('trust proxy', trust);
+}
+
 function normalizeCorsOrigin(entry) {
   const s = String(entry).trim();
   if (!s) return null;

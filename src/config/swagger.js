@@ -28,7 +28,7 @@ const options = {
           scheme: 'bearer',
           bearerFormat: 'JWT',
           description:
-            'Same JWT as the session cookie. Use when cross-origin cookies are not sent (typical for SPA + API on different hosts). Send Authorization: Bearer plus the access_token from login, activate, or reset-password.',
+            'Same JWT as the session cookie. Use when cross-origin cookies are not sent (typical for SPA + API on different hosts). Send Authorization: Bearer plus the access_token from login, activate, or reset-password. Alternative header: X-Access-Token with the same JWT.',
         },
       },
       schemas: {

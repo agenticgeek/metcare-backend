@@ -37,7 +37,8 @@ app.use(
       callback(null, false);
     },
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language'],
+    // Don't hardcode allowedHeaders: browsers may send Cache-Control/Pragma/etc in preflight.
+    // Let the middleware reflect Access-Control-Request-Headers instead.
   })
 );
 app.use(express.json());

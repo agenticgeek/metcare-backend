@@ -269,6 +269,18 @@ async function resetPassword(req, res) {
   return success(res, { ...sanitizeUser(fresh), access_token }, '', 200);
 }
 
+async function me(req, res) {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, email, full_name')
+    .eq('id', req.user.id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return failure(res, messages.UNAUTHORIZED, 401);
+  return success(res, sanitizeUser(data), '', 200);
+}
+
 function logout(req, res) {
   clearStudentCookie(res);
   return success(res, null, messages.LOGOUT_SUCCESS, 200);
@@ -281,5 +293,6 @@ module.exports = {
   activate,
   forgotPassword,
   resetPassword,
+  me,
   logout,
 };

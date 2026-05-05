@@ -7,10 +7,12 @@ const {
   activate,
   forgotPassword,
   resetPassword,
+  me,
   logout,
 } = require('../controllers/auth.controller');
 const { asyncHandler } = require('../middleware/asyncHandler');
 const { validateRequest } = require('../middleware/validate');
+const { studentAuth } = require('../middleware/studentAuth');
 
 const router = Router();
 
@@ -300,6 +302,36 @@ router.post(
   validateRequest,
   asyncHandler(resetPassword)
 );
+
+/**
+ * @openapi
+ * /auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Current logged-in student
+ *     security:
+ *       - studentCookie: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Session is valid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessEnvelope'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/StudentProfile'
+ *       401:
+ *         description: Missing or invalid session
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorEnvelope'
+ */
+router.get('/me', studentAuth, asyncHandler(me));
 
 /**
  * @openapi

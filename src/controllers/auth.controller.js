@@ -9,7 +9,6 @@ const { provisionPendingStudentWithActivationEmail } = require('../utils/provisi
 const { success, failure } = require('../utils/response');
 
 const SALT_ROUNDS = 10;
-const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 
 function sanitizeUser(row) {
   return {
@@ -53,19 +52,8 @@ function isDisabledStatus(status) {
   return normalizedAccountStatus(status) === 'disabled';
 }
 
-function isActiveStatus(status) {
-  return normalizedAccountStatus(status) === 'active';
-}
-
 function isPendingStatus(status) {
   return normalizedAccountStatus(status) === 'pending';
-}
-
-function hasUsablePasswordHash(passwordHash) {
-  return (
-    typeof passwordHash === 'string' &&
-    BCRYPT_HASH_PATTERN.test(passwordHash.trim())
-  );
 }
 
 async function login(req, res) {
@@ -81,9 +69,6 @@ async function login(req, res) {
   }
   if (isPendingStatus(user.status)) {
     return failure(res, t(req, 'ACCOUNT_PENDING'), 403);
-  }
-  if (!isActiveStatus(user.status) || !hasUsablePasswordHash(user.password_hash)) {
-    return failure(res, t(req, 'ACCOUNT_SETUP_REQUIRED'), 403);
   }
 
   const valid = await bcrypt.compare(password, user.password_hash);
@@ -215,17 +200,9 @@ async function forgotPassword(req, res) {
 
   try {
     const user = await fetchUserByEmail(supabase, email);
-    if (user && !isDisabledStatus(user.status)) {
+    if (user && String(user.status).toLowerCase() === 'active') {
       const token = generateSecureToken();
       const expires_at = expiresAtFromNow();
-      const { error: invalidateErr } = await supabase
-        .from('activation_tokens')
-        .update({ used: true })
-        .eq('user_id', user.id)
-        .eq('type', 'reset')
-        .eq('used', false);
-      if (invalidateErr) throw invalidateErr;
-
       const { error: insertErr } = await supabase.from('activation_tokens').insert({
         user_id: user.id,
         token,
@@ -271,7 +248,7 @@ async function resetPassword(req, res) {
 
   const { error: userErr } = await supabase
     .from('users')
-    .update({ password_hash, status: 'active' })
+    .update({ password_hash })
     .eq('id', row.user_id);
   if (userErr) throw userErr;
 

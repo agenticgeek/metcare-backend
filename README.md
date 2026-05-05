@@ -81,8 +81,7 @@ Copy `.env.example` → `.env` and fill:
 | `SUPABASE_SERVICE_ROLE_KEY` | API only | **Never** in the browser; server-only DB access. |
 | `RESEND_API_KEY` | API only | Email sending. |
 | `RESEND_FROM_EMAIL` | API only | Verified sender in Resend. |
-| `FRONTEND_PUBLIC_URL` | API + users | Preferred public student app URL for links inside emails (activation + reset), e.g. `https://metcare-frontend.vercel.app`. |
-| `BASE_URL` | API + users | Deprecated fallback for email links. `FRONTEND_PUBLIC_URL` / `FRONTEND_URL` take precedence. |
+| `BASE_URL` | API + users | **Links inside emails** (activation + reset). Should be the **student app** base where routes like `/activate` and `/reset-password` live (often same as `FRONTEND_URL`). |
 | `CF_ACCOUNT_ID` | API only | Cloudflare account id for Stream token endpoint. |
 | `CF_STREAM_API_TOKEN` | API only | API token with Stream permissions. |
 
@@ -116,17 +115,17 @@ Base path: **`/api/auth`**.
 | Method | Path | Body (JSON) | Behavior |
 |--------|------|-------------|----------|
 | POST | `/api/auth/register` | `{ "email", "full_name", "password", "confirm_password" }` | **201** — **pending** user (password hashed), activation token (72h), **Resend** email with **`/activate?token=...`**. **No cookie** until **`POST /api/auth/activate`**. **409** if email exists. **502** if email fails (rolled back). `Accept-Language`: `fr` / `en`. |
-| POST | `/api/auth/login` | `{ "email", "password" }` | On success: sets **`student_session`**, returns `data` = `{ id, full_name, email, access_token }`. **401** wrong email/password. **403** if **pending**, **disabled**, or missing a usable password hash (admin-created account needs setup). Send **`Accept-Language: fr`** (or `en`) for FR/EN copy. |
+| POST | `/api/auth/login` | `{ "email", "password" }` | On success: sets **`student_session`**, returns `data` = `{ id, full_name, email }`. **401** wrong email/password. **403** if **pending** or **disabled** (distinct messages). Send **`Accept-Language: fr`** (or `en`) for FR/EN copy. |
 | GET | `/api/auth/token-check` | Query: **`token`** (required), **`type`** = `activation` \| `reset` (default `activation`) | **Read-only.** Always **200** with `data.status`: `valid` \| `invalid` \| `used` \| `expired` — for `/activate` and `/reset-password` page load without submitting a password. |
 | POST | `/api/auth/activate` | `{ "token", "password", "confirm_password" }` | From email link query `token`. Sets cookie; returns user profile in `data`. |
-| POST | `/api/auth/forgot-password` | `{ "email" }` | **Always 200** + same success message (no email enumeration). Sends a setup/reset link for any non-disabled account, including admin-created pending accounts. |
-| POST | `/api/auth/reset-password` | `{ "token", "password", "confirm_password" }` | From email link query `token`. Sets password, marks the user **active**, sets cookie, and returns user + `access_token` in `data`. |
+| POST | `/api/auth/forgot-password` | `{ "email" }` | **Always 200** + same success message (no email enumeration). |
+| POST | `/api/auth/reset-password` | `{ "token", "password", "confirm_password" }` | From email link query `token`. Sets cookie; returns user in `data`. |
 | POST | `/api/auth/logout` | _(none)_ | Clears cookie. |
 
 **Frontend routes (your SPA, not this repo):**
 
-- Activation link in email: **`${FRONTEND_PUBLIC_URL}/activate?token=...`**
-- Reset link: **`${FRONTEND_PUBLIC_URL}/reset-password?token=...`**
+- Activation link in email: **`${BASE_URL}/activate?token=...`**
+- Reset link: **`${BASE_URL}/reset-password?token=...`**
 
 Those pages should read `token` from the query string and POST to the API with `credentials: 'include'`.
 
@@ -214,7 +213,7 @@ Adjust `API` to your deployed API origin (or use a dev proxy so `API` is `''` an
 - **Student RLS rules:** `authenticated` may **SELECT** own `users` row (no `password_hash` column grant) and **SELECT** published `modules` rows (no `video_id` column grant). **No** access to `activation_tokens` or `admins` for anon/authenticated. Matches the student brief; **not** the admin portal.
 - **Supabase Auth:** Policies use `auth.uid()` = `public.users.id`. When provisioning a student, create `auth.users` and `public.users` with the **same UUID** (or add the optional FK in the SQL comment at end of `schema_and_rls.sql`).
 - **Service role:** This API uses **`SUPABASE_SERVICE_ROLE_KEY`** only on the server; it **bypasses RLS**. RLS applies when the SPA uses the **anon** or **authenticated** Supabase client.
-- **Student lifecycle:** **`POST /api/auth/register`** creates a **pending** user, activation token, and sends **`${FRONTEND_PUBLIC_URL}/activate?token=...`** via Resend. The student finishes with **`POST /api/auth/activate`**. Admin-created users should either have a real bcrypt `password_hash`, or use **forgot password** once so the email-verified reset flow creates the password and marks them **active**.
+- **Student lifecycle:** **`POST /api/auth/register`** creates a **pending** user, activation token, and sends **`${BASE_URL}/activate?token=...`** via Resend. The student finishes with **`POST /api/auth/activate`**. You can still provision users manually in Supabase if needed.
 
 **`activation_tokens.type`:** Must support **`activation`** and **`reset`** (forgot-password flow inserts `reset`).
 
@@ -228,7 +227,7 @@ Use this for contract reference and QA. Cookie auth in “Try it out” only wor
 ### 10) Security summary (for reviewers)
 
 - Generic **401** for wrong password or unknown email (same message).
-- **403** on login for **pending**, **disabled**, or setup-required accounts with **different** messages (`Accept-Language` selects FR/EN). Setup-required means the user exists but has no usable bcrypt password hash.
+- **403** on login for **pending** or **disabled** accounts with **different** messages (`Accept-Language` selects FR/EN).
 - bcrypt for passwords; responses never include **`password_hash`** or raw DB tokens.
 - Activation/reset tokens: **single-use**, **72h** expiry, cryptographically random.
 

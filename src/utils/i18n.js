@@ -9,8 +9,6 @@ const STRINGS = {
     ACCOUNT_PENDING: 'Your account is not yet activated. Check your emails.',
     ACCOUNT_DISABLED:
       'Your account has been disabled. Contact your administrator.',
-    ACCOUNT_SETUP_REQUIRED:
-      'Your account needs a password setup. Use forgot password to receive a setup link.',
     FORGOT_PASSWORD_SUCCESS:
       'If an account exists with this email, you will receive a reset link shortly.',
     TOKEN_INVALID: 'This link is invalid.',
@@ -31,8 +29,6 @@ const STRINGS = {
       "Votre compte n'est pas encore activé. Vérifiez vos emails.",
     ACCOUNT_DISABLED:
       'Votre compte a été désactivé. Contactez votre administrateur.',
-    ACCOUNT_SETUP_REQUIRED:
-      'Votre compte nécessite la création d’un mot de passe. Utilisez mot de passe oublié pour recevoir un lien.',
     FORGOT_PASSWORD_SUCCESS:
       'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation dans quelques minutes.',
     TOKEN_INVALID: 'Ce lien est invalide.',

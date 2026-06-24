@@ -5,13 +5,20 @@ const { success, failure } = require('../utils/response');
 
 async function listModules(req, res) {
   const supabase = getSupabase();
-  const { data, error } = await supabase
+  const { type } = req.query;
+
+  let query = supabase
     .from('modules')
     .select(
-      'id, order_index, title, description, duration_seconds, thumbnail_url'
+      'id, order_index, title, description, duration_seconds, thumbnail_url, module_type'
     )
-    .eq('is_published', true)
-    .order('order_index', { ascending: true });
+    .eq('is_published', true);
+
+  if (type) {
+    query = query.eq('module_type', type);
+  }
+
+  const { data, error } = await query.order('order_index', { ascending: true });
 
   if (error) throw error;
   return success(res, data || [], '', 200);

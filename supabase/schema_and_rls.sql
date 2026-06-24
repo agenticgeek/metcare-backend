@@ -96,12 +96,15 @@ alter table public.activation_tokens
   add constraint activation_tokens_type_check
     check (type in ('activation', 'reset'));
 
--- modules.created_at / thumbnail_url
+-- modules.created_at / thumbnail_url / module_type
 alter table public.modules
   add column if not exists created_at timestamptz not null default now();
 
 alter table public.modules
   add column if not exists thumbnail_url text null;
+
+alter table public.modules
+  add column if not exists module_type text not null default 'full-body';
 
 -- Unique order_index (your ERD). Safe if constraint already exists from CREATE TABLE.
 do $$ begin
@@ -168,6 +171,7 @@ grant select (
     description,
     duration_seconds,
     thumbnail_url,
+    module_type,
     is_published,
     created_at
   )
